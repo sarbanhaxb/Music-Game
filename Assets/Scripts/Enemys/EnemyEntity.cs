@@ -20,6 +20,7 @@ public class EnemyEntity : MonoBehaviour
     private Animator animator;
     private SpriteRenderer spriteRenderer;
     private Vector3 originalPosition;
+    private EnemyAI enemyAI;
 
 
     private void Awake()
@@ -27,6 +28,7 @@ public class EnemyEntity : MonoBehaviour
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         animator = GetComponentInChildren<Animator>();
         currentHealth = maxHealth;
+        enemyAI = GetComponent<EnemyAI>();
     }
 
 
@@ -35,7 +37,7 @@ public class EnemyEntity : MonoBehaviour
     {
         if (!EnemyAI.aggressiveStatus)
         {
-            GetComponent<EnemyAI>().SetAggressiveStatus();
+            enemyAI.SetAggressiveStatus();
         }
 
         if (!animator.GetBool("IsAggressive"))

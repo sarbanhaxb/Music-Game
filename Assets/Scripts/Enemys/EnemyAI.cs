@@ -14,6 +14,7 @@ public class EnemyAI : MonoBehaviour
     private Vector3 roamingPosition;
     private Vector3 startingPosition;
     private Vector3 pastPosition;
+    private Animator animator;
 
     [Header("Chasing parameter")]
     [SerializeField] private float chasingDistance = 6f;
@@ -30,6 +31,7 @@ public class EnemyAI : MonoBehaviour
 
     private void Awake()
     {
+        animator = GetComponentInChildren<Animator>();
         pastPosition = transform.position;
         navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshAgent.updateRotation = false;
@@ -87,8 +89,8 @@ public class EnemyAI : MonoBehaviour
             case State.Attacking:
                 break;
             case State.Chasing:
-                GetCurrentState();
                 ChasingTarget();
+                GetCurrentState();
                 break;
             case State.Death:
                 navMeshAgent.isStopped = true;
@@ -112,7 +114,16 @@ public class EnemyAI : MonoBehaviour
     {
         if (aggressiveStatus && Vector3.Distance(transform.position, PlayerScript.Instance.transform.position) <= chasingDistance)
         {
-            currentState = State.Chasing;
+            if (animator.GetBool("IsDamage"))
+            {
+                Debug.Log("TYT");
+                navMeshAgent.isStopped = true;
+            }
+            else
+            {
+                currentState = State.Chasing;
+                navMeshAgent.isStopped = false;
+            }
         }
         else
         {

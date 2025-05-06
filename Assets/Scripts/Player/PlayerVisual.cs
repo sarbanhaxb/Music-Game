@@ -60,8 +60,12 @@ public class PlayerVisual : MonoBehaviour
                 attackZone.transform.localScale = new Vector3(1, 1, 1);
             }
             animator.SetBool("IsAttack", true);
-            attackZone.enabled = true;
         }
+    }
+
+    private void OnAttackStart()
+    {
+        attackZone.enabled = true;
     }
 
     private void OnAttackEnd()
