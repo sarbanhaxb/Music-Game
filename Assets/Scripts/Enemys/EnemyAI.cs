@@ -88,7 +88,6 @@ public class EnemyAI : MonoBehaviour
             case State.Death:
                 DeathAction();
                 break;
-
             case State.Roaming:
                 RoamingAction();
                 GetCurrentState();
@@ -139,8 +138,8 @@ public class EnemyAI : MonoBehaviour
     //Логика атаки (НЕ РЕАЛИЗОВАНО)
     private void AttackAction()
     {
-        //animator.SetBool(IsAttackHash, true);
-        //ChangeFacingDirection(transform.position, PlayerScript.Instance.transform.position);
+        animator.SetBool(IsAttackHash, true);
+        ChangeFacingDirection(transform.position, PlayerScript.Instance.transform.position);
     }
 
     //Логика смерти

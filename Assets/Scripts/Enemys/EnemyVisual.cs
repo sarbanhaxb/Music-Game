@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(SpriteRenderer))]
 public class EnemyVisual : MonoBehaviour
 {
     private Animator animator;
     private EnemyAI EnemyAI;
     private SpriteRenderer spriteRenderer;
+
+    private static readonly int IsDamageHash = Animator.StringToHash("IsDamage");
+    private static readonly int IsAggressiveHash = Animator.StringToHash("IsAggressive");
+    private static readonly int IsIdleHash = Animator.StringToHash("IsIdle");
+    private static readonly int IsAttackHash = Animator.StringToHash("IsAttack");
 
     [Header("Animators")]
     [SerializeField] private RuntimeAnimatorController defaultAnimator;
@@ -19,7 +25,7 @@ public class EnemyVisual : MonoBehaviour
     [SerializeField] private float destroyDelay = 2f;
     [SerializeField] private float blinkInterval = 0.1f;
 
-    public bool IsAggressive = false;
+    public bool IsAggressive { get; private set; } = false;
 
     private void Awake()
     {
@@ -30,19 +36,17 @@ public class EnemyVisual : MonoBehaviour
         EnemyAlertSystem.Instance.OnPlayerAttacked += BecomeAggressive;
     }
 
-    private void IsDamageOff() => animator.SetBool("IsDamage", false);
+    private void IsDamageOff() => animator.SetBool(IsDamageHash, false);
+    private void IsAttackOff() => animator.SetBool(IsAttackHash, false);
 
     //Триггер на агрессию
     public void BecomeAggressive()
     {
-        switch (animator.GetBool("IsAggressive"))
+        if (!animator.GetBool(IsAggressiveHash))
         {
-            case true:
-                break;
-            case false:
-                animator.runtimeAnimatorController = aggressiveAnimator;
-                animator.SetBool("IsAggressive", true);
-                break;
+            animator.runtimeAnimatorController = aggressiveAnimator;
+            animator.SetBool(IsAggressiveHash, true);
+            IsAggressive = true;
         }
     }
 
@@ -56,7 +60,7 @@ public class EnemyVisual : MonoBehaviour
 
     private void Update()
     {
-        animator.SetBool("IsIdle", EnemyAI.isIdle);
+        animator.SetBool(IsIdleHash, EnemyAI.isIdle);
         if (IsAggressive) BecomeAggressive();
     }
 
@@ -87,7 +91,6 @@ public class EnemyVisual : MonoBehaviour
             timer += blinkInterval;
             yield return new WaitForSeconds(blinkInterval);
         }
-
-        Destroy(gameObject);
+        Destroy(transform.parent.gameObject);
     }
 }

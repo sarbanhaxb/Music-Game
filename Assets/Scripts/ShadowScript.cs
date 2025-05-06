@@ -7,8 +7,8 @@ public class ShadowScript : MonoBehaviour
     void LateUpdate()
     {
         transform.localScale = new Vector3(
-            Mathf.Abs(transform.localScale.x),  // Всегда положительный X
-            Mathf.Abs(transform.localScale.y),  // Всегда положительный Y
+            Mathf.Abs(transform.localScale.x),
+            Mathf.Abs(transform.localScale.y),
             transform.localScale.z);  
     }
 }

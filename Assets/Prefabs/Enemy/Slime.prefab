@@ -144,8 +144,8 @@ Rigidbody2D:
   m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
+  m_UseAutoMass: 1
+  m_Mass: 0.10163084
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 0
@@ -159,7 +159,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 4
+  m_Constraints: 7
 --- !u!70 &5932903174725051863
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -237,7 +237,7 @@ MonoBehaviour:
   roamingDistanceMin: 3
   roamingTimerMax: 8
   roamingTime: 0
-  attackDistance: 1
+  attackDistance: 0.5
   chasingDistance: 6
   startingState: 0
   currentState: 0
@@ -368,7 +368,6 @@ MonoBehaviour:
   jumpDuration: 0.4
   destroyDelay: 2
   blinkInterval: 0.1
-  IsAggressive: 0
 --- !u!114 &1355078828421750145
 MonoBehaviour:
   m_ObjectHideFlags: 0

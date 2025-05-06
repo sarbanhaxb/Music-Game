@@ -10,15 +10,11 @@ public class PlayerVisual : MonoBehaviour
 {
     public Animator animator;
     private SpriteRenderer spriteRenderer;
-
-    [SerializeField]
-    private BoxCollider2D attackZone;
-
-    public static PlayerVisual instance;
+    public static PlayerVisual Instance;
 
     private void Awake()
     {
-        instance = this;
+        Instance = this;
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
@@ -56,11 +52,11 @@ public class PlayerVisual : MonoBehaviour
         {
             if (GameInput.Instance.GetMousePosition().x < PlayerScript.Instance.GetPlayerPosition().x)
             {
-                attackZone.transform.localScale = new Vector3(-1, 1, 1);
+                AttackZoneScript.Instance.attackZone.transform.localScale = new Vector3(-1, 1, 1);
             }
             else
             {
-                attackZone.transform.localScale = new Vector3(1, 1, 1);
+                AttackZoneScript.Instance.attackZone.transform.localScale = new Vector3(1, 1, 1);
             }
             animator.SetBool("IsAttack", true);
         }
@@ -70,14 +66,16 @@ public class PlayerVisual : MonoBehaviour
     //включает коллайдер зоны атаки
     private void OnAttackStart()
     {
-        attackZone.enabled = true;
+        AttackZoneScript.Instance.attackZone.enabled = true;
     }
 
     //выключает состояния атаки и анимацию.
     private void OnAttackEnd()
     {
         animator.SetBool("IsAttack", false);
-        attackZone.enabled = false;
+        AttackZoneScript.Instance.attackZone.enabled = false;
     }
+
+    private void DamageOff() => animator.SetBool("IsDamage", false);
 
 }

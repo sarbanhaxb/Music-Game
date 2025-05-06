@@ -5,11 +5,18 @@ using UnityEngine;
 [SelectionBase]
 public class PlayerScript : MonoBehaviour
 {
-
     public static PlayerScript Instance {  get; private set; }
 
-    [SerializeField]
-    private float movingSpeed = 5f;
+    private static readonly int IsDamageHash = Animator.StringToHash("IsDamage");
+    private static readonly int IsAttackHash = Animator.StringToHash("IsAttack");
+    private static readonly int Death = Animator.StringToHash("Death");
+
+    [Header("HP")]
+    [SerializeField] private int maxHealth = 1000;
+    [SerializeField] private int currentHealth;
+
+
+    [SerializeField] private float movingSpeed = 5f;
     private float minMovingSpeed = 0.1f;
     private bool isRunning = false;
 
@@ -19,6 +26,7 @@ public class PlayerScript : MonoBehaviour
 
     private void Awake()
     {
+        currentHealth = maxHealth;
         Instance = this;
         rb = GetComponent<Rigidbody2D>();
     }
@@ -30,13 +38,12 @@ public class PlayerScript : MonoBehaviour
 
     private void Player_OnPlayerAttack(object sender, System.EventArgs e)
     {
-        PlayerVisual.instance.OnAttack();
-
+        PlayerVisual.Instance.OnAttack();
     }
 
     private void Update()
     {
-        if (!PlayerVisual.instance.animator.GetBool("IsAttack"))
+        if (!PlayerVisual.Instance.animator.GetBool(IsAttackHash) && !PlayerVisual.Instance.animator.GetBool(IsDamageHash))
         {
             inputVector = GameInput.Instance.GetMovementVector();
         }
@@ -44,10 +51,22 @@ public class PlayerScript : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!PlayerVisual.instance.animator.GetBool("IsAttack"))
+        if (!PlayerVisual.Instance.animator.GetBool(IsAttackHash))
             HandleMovement();
     }
 
+    private void TakeDamage(int damage)
+    {
+        if (currentHealth - damage <= 0)
+        {
+            PlayerVisual.Instance.animator.SetTrigger(Death);
+        }
+        else
+        {
+            currentHealth -= damage;
+            PlayerVisual.Instance.animator.SetBool(IsDamageHash, true);
+        }
+    }
     private void HandleMovement()
     {
         rb.MovePosition(rb.position + inputVector * (movingSpeed * Time.fixedDeltaTime));
@@ -65,9 +84,15 @@ public class PlayerScript : MonoBehaviour
     public bool IsRunning() => isRunning;
     public Vector3 GetPlayerPosition() => Camera.main.WorldToScreenPoint(transform.position);
 
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        EnemyAI enemy = collision.GetComponent<CapsuleCollider2D>().GetComponent<EnemyAI>();
-        if (enemy != null) enemy.TakeDamage(50);
+        Debug.Log(collision.gameObject.tag);
+        Debug.Log(collision.CompareTag("Player"));
+        
+        if (collision.TryGetComponent<EnemyAI>(out var enemy))
+        {
+            TakeDamage(50);
+        }
     }
 }
