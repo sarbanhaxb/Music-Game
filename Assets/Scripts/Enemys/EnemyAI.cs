@@ -4,8 +4,23 @@ using UnityEngine;
 using UnityEngine.AI;
 using MusicGames.Utils;
 
+[SelectionBase]
 public class EnemyAI : MonoBehaviour
 {
+    private Animator animator;
+    public bool isIdle = false;
+    public static bool aggressiveStatus;
+    public NavMeshAgent navMeshAgent;
+    private EnemyVisual enemyVisual;
+
+    private static readonly int IsAttackHash = Animator.StringToHash("IsAttack");
+    private static readonly int IsDamageHash = Animator.StringToHash("IsDamage");
+    private static readonly int IsDeadHash = Animator.StringToHash("IsDead");
+
+    [Header("HP")]
+    [SerializeField] private int maxHealth;
+    [SerializeField] private int currentHealth;
+
     [Header("Roaming parameter")]
     [SerializeField] private float roamingDistanceMax = 7f;
     [SerializeField] private float roamingDistanceMin = 3f;
@@ -14,19 +29,16 @@ public class EnemyAI : MonoBehaviour
     private Vector3 roamingPosition;
     private Vector3 startingPosition;
     private Vector3 pastPosition;
-    private Animator animator;
+
+    [Header("Attack parameter")]
+    [SerializeField] private float attackDistance = 1f;
 
     [Header("Chasing parameter")]
     [SerializeField] private float chasingDistance = 6f;
-    //[SerializeField] private float chasingSpeedMultiply = 2f;
 
     [Header("States")]
-    [SerializeField] private State startingState = State.Roaming;
+    [SerializeField] private State startingState;
     [SerializeField] private State currentState;
-    public bool isIdle = false;
-    public static bool aggressiveStatus;
-
-    public NavMeshAgent navMeshAgent;
 
 
     private void Awake()
@@ -38,45 +50,23 @@ public class EnemyAI : MonoBehaviour
         navMeshAgent.updateUpAxis = false;
         currentState = startingState;
         aggressiveStatus = false;
+        currentHealth = maxHealth;
+        enemyVisual = GetComponentInChildren<EnemyVisual>();
     }
 
-    //Метод, меняющий состояние на преследование. Публичный.
-    public void SetAggressiveStatus()
-    {
-        aggressiveStatus = true;
-    }
-
-    //Метод, меняющий состояние на смерть. Публичный.
-    public void SetDeath()
-    {
-        currentState = State.Death;
-    }
     public enum State
     {
         Roaming,
         Attacking,
         Chasing,
-        Death
+        Death,
+        Nothing
     }
 
     private void Update()
     {
         CheckIdle();
         StateHandler();
-    }
-
-    //Проверка стоит ли на месте или движется
-    private void CheckIdle()
-    {
-        if (pastPosition == transform.position)
-        {
-            isIdle = true;
-        }
-        else
-        {
-            isIdle = false;
-        }
-        pastPosition = transform.position;
     }
 
 
@@ -86,43 +76,48 @@ public class EnemyAI : MonoBehaviour
         switch (currentState)
         {
             default:
+                break;
             case State.Attacking:
+                AttackAction();
+                GetCurrentState();
                 break;
             case State.Chasing:
-                ChasingTarget();
+                ChasingAction();
                 GetCurrentState();
                 break;
             case State.Death:
-                navMeshAgent.isStopped = true;
+                DeathAction();
                 break;
 
             case State.Roaming:
+                RoamingAction();
                 GetCurrentState();
-                roamingTime -= Time.deltaTime;
-                if (roamingTime < 0)
-                {
-                    Roaming();
-                    roamingTime = Random.Range(5f, roamingTimerMax);
-                }
+                break;
+            case State.Nothing:
                 break;
         }
     }
 
-
-
+    //Проверка корректности текущего состояния
     public void GetCurrentState()
     {
         if (aggressiveStatus && Vector3.Distance(transform.position, PlayerScript.Instance.transform.position) <= chasingDistance)
         {
-            if (animator.GetBool("IsDamage"))
+            if (Vector3.Distance(transform.position, PlayerScript.Instance.transform.position) <= attackDistance)
             {
-                Debug.Log("TYT");
-                navMeshAgent.isStopped = true;
+                currentState = State.Attacking;
             }
             else
             {
-                currentState = State.Chasing;
-                navMeshAgent.isStopped = false;
+                if (animator.GetBool(IsDamageHash))
+                {
+                    navMeshAgent.isStopped = true;
+                }
+                else
+                {
+                    currentState = State.Chasing;
+                    navMeshAgent.isStopped = false;
+                }
             }
         }
         else
@@ -131,8 +126,45 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    //Получение урона
+    public void TakeDamage(int damage)
+    {
+        if (!aggressiveStatus) aggressiveStatus = true;
+        if (!animator.GetBool("IsAggressive")) EnemyAlertSystem.Instance.TriggerAggression();
+        currentHealth -= damage;
+        if (!DetectDeath()) animator.SetBool(IsDamageHash, true);
+    }
+
+
+    //Логика атаки (НЕ РЕАЛИЗОВАНО)
+    private void AttackAction()
+    {
+        //animator.SetBool(IsAttackHash, true);
+        //ChangeFacingDirection(transform.position, PlayerScript.Instance.transform.position);
+    }
+
+    //Логика смерти
+    private bool DetectDeath()
+    {
+        if (currentHealth <= 0)
+        {
+            currentState = State.Death;
+            return true;
+        }
+        return false;
+    }
+    private void DeathAction()
+    {
+        navMeshAgent.isStopped = true;
+        GetComponent<Rigidbody2D>().simulated = false;
+        GetComponent<CapsuleCollider2D>().enabled = false;
+        animator.SetTrigger(IsDeadHash);
+        StartCoroutine(enemyVisual.DeathEffects(transform.position));
+        currentState = State.Nothing;
+    }
+
     //Логика преследования
-    private void ChasingTarget()
+    private void ChasingAction()
     {
         navMeshAgent.ResetPath();
         navMeshAgent.SetDestination(PlayerScript.Instance.transform.position);
@@ -140,6 +172,15 @@ public class EnemyAI : MonoBehaviour
     }
 
     //Логика обычного передвижения
+    private void RoamingAction()
+    {
+        roamingTime -= Time.deltaTime;
+        if (roamingTime < 0)
+        {
+            Roaming();
+            roamingTime = Random.Range(5f, roamingTimerMax);
+        }
+    }
     private void Roaming()
     {
         startingPosition = transform.position;
@@ -147,17 +188,19 @@ public class EnemyAI : MonoBehaviour
         ChangeFacingDirection(startingPosition, roamingPosition);
         navMeshAgent.SetDestination(roamingPosition);
     }
-
+    //Проверка стоит ли на месте или движется
+    private void CheckIdle()
+    {
+        if (pastPosition == transform.position) isIdle = true;
+        else isIdle = false;
+        pastPosition = transform.position;
+    }
+    //Выдает рандомно позицию для брожения
     private Vector3 GetRoamingPosition() => startingPosition + Utils.GetRandomDir() * Random.Range(roamingDistanceMin, roamingDistanceMax);
+    //Разворот анимации, при необходимости
     private void ChangeFacingDirection(Vector3 sourcePosition, Vector3 targetPosition)
     {
-        if (sourcePosition.x > targetPosition.x)
-        {
-            transform.rotation = Quaternion.Euler(0, -180, 0);
-        }
-        else
-        {
-            transform.rotation = Quaternion.Euler(0, 0, 0);
-        }
+        if (sourcePosition.x > targetPosition.x) transform.rotation = Quaternion.Euler(0, -180, 0);
+        else transform.rotation = Quaternion.Euler(0, 0, 0);
     }
 }

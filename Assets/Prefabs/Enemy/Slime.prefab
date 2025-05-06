@@ -110,7 +110,6 @@ GameObject:
   - component: {fileID: 5932903174725051863}
   - component: {fileID: 6838008730829367955}
   - component: {fileID: 6007830411686752336}
-  - component: {fileID: 832722015460305921}
   m_Layer: 0
   m_Name: Slime
   m_TagString: Enemy
@@ -230,35 +229,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba92ec72afeb499469bf06a66f871677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isIdle: 0
+  navMeshAgent: {fileID: 6838008730829367955}
+  maxHealth: 100
+  currentHealth: 0
   roamingDistanceMax: 7
   roamingDistanceMin: 3
   roamingTimerMax: 8
   roamingTime: 0
+  attackDistance: 1
   chasingDistance: 6
   startingState: 0
   currentState: 0
-  isIdle: 0
-  aggressiveStatus: 0
-  navMeshAgent: {fileID: 0}
---- !u!114 &832722015460305921
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4602832457721660409}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 38ae83fcad30516439349da1e8c72c5c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  jumpHeight: 0.5
-  jumpDuration: 0.4
-  destroyDelay: 2
-  blinkInterval: 0.2
-  isDead: 0
-  maxHealth: 500
-  currentHealth: 500
 --- !u!1 &7057796991115574668
 GameObject:
   m_ObjectHideFlags: 0
@@ -382,6 +364,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultAnimator: {fileID: 9100000, guid: e69e40f448a627440b576ac9d235c81c, type: 2}
   aggressiveAnimator: {fileID: 9100000, guid: d88f4aacaaa91c6498ae7de738773158, type: 2}
+  jumpHeight: 0.5
+  jumpDuration: 0.4
+  destroyDelay: 2
+  blinkInterval: 0.1
   IsAggressive: 0
 --- !u!114 &1355078828421750145
 MonoBehaviour:

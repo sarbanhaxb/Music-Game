@@ -32,6 +32,8 @@ public class PlayerVisual : MonoBehaviour
         }
     }
 
+
+    //Определяет в каком направлении движется ГГ
     private void AdjustPlayerFacingDirection()
     {
         Vector3 mousePos = GameInput.Instance.GetMousePosition();
@@ -47,6 +49,7 @@ public class PlayerVisual : MonoBehaviour
         }
     }
 
+    //включает состояние атаки
     public void OnAttack()
     {
         if (!animator.GetBool("IsAttack"))
@@ -63,11 +66,14 @@ public class PlayerVisual : MonoBehaviour
         }
     }
 
+
+    //включает коллайдер зоны атаки
     private void OnAttackStart()
     {
         attackZone.enabled = true;
     }
 
+    //выключает состояния атаки и анимацию.
     private void OnAttackEnd()
     {
         animator.SetBool("IsAttack", false);

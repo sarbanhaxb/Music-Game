@@ -67,8 +67,7 @@ public class PlayerScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        
-        EnemyEntity enemy = collision.GetComponent<CapsuleCollider2D>().GetComponent<EnemyEntity>();
+        EnemyAI enemy = collision.GetComponent<CapsuleCollider2D>().GetComponent<EnemyAI>();
         if (enemy != null) enemy.TakeDamage(50);
     }
 }
